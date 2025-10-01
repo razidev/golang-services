@@ -1,0 +1,5 @@
+service:
+  port: ":9999"
+
+database:
+  dataSourceName: "postgres://adminrazi:PassWD1234@localhost:5433/fastcampus_db?sslmode=disable"
