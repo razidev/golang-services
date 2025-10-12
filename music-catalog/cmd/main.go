@@ -3,6 +3,10 @@ package main
 import (
 	"log"
 	"music-catalog/internal/configs"
+	membershipsHdl "music-catalog/internal/handler/memberships"
+	"music-catalog/internal/models/memberships"
+	membershipsRepo "music-catalog/internal/repository/memberships"
+	membershipsSvc "music-catalog/internal/service/memberships"
 	"music-catalog/pkg/internalsql"
 
 	"github.com/gin-gonic/gin"
@@ -27,11 +31,18 @@ func main() {
 
 	cfg = configs.Get()
 
-	_, err = internalsql.Connect(cfg.Database.DataSourceName)
+	db, err := internalsql.Connect(cfg.Database.DataSourceName)
 	if err != nil {
 		log.Fatalf("Failed to connect database : %v", err)
 	}
 
+	db.AutoMigrate(&memberships.User{})
 	r := gin.Default()
+
+	membershipRepo := membershipsRepo.NewRepository(db)
+	membershipSvc := membershipsSvc.NewService(cfg, membershipRepo)
+	membershipHdl := membershipsHdl.NewHandler(r, membershipSvc)
+	membershipHdl.RegisterRoute()
+
 	r.Run(cfg.Service.Port)
 }
